@@ -4,7 +4,7 @@
  * never part of a build. Rules and response shapes mirror the real handlers
  * (src/donor/donor_by_mobile_helpers.js and friends). Data resets when the server restarts.
  *
- * Try:  9876543210 — returning donor, ₹600 given this year, no PAN (₹401 more asks for PAN; ₹400 doesn't)
+ * Try:  9876543210 — returning donor, ₹600 given this year, no PAN (₹400 more asks for PAN; ₹399 doesn't)
  *       9811111111 — returning donor with PAN on file (never asked)
  *       any other  — new donor (Donor ID issued ~3 s after registering, like the scheduler)
  *
@@ -17,7 +17,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { Plugin } from "vite";
 
-const PAN_REQUIRED_ABOVE = 1000;
+const PAN_REQUIRED_FROM = 1000;
 const MOBILE_RE = /^[6-9]\d{9}$/;
 const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 const NAME_RE = /^[A-Za-z][A-Za-z .'-]{0,49}$/;
@@ -80,9 +80,9 @@ export function mockApi(): Plugin {
     [...donations.values()]
       .filter((d) => d.donorId === donorId && d.status === "success" && d.date >= financialYear().start)
       .reduce((sum, d) => sum + d.amount, 0);
-  /** helpers.panRequired: no PAN on file and this year's total plus this gift are more than the threshold. */
+  /** helpers.panRequired: no PAN on file and this year's total plus this gift reach the threshold. */
   const panRequired = (donor: Donor | undefined, amount: number) =>
-    !donor?.pan && (donor ? fyTotal(donor.donorId) : 0) + amount > PAN_REQUIRED_ABOVE;
+    !donor?.pan && (donor ? fyTotal(donor.donorId) : 0) + amount >= PAN_REQUIRED_FROM;
 
   function send(res: ServerResponse, code: number, data: unknown, errorCode: string | 0 = 0, error: string | null = null) {
     res.statusCode = code;
@@ -121,7 +121,7 @@ export function mockApi(): Plugin {
         registration_pending: !donor && pendingRegs.has(mobile),
         pan_required: amountParam ? panRequired(donor, amount) : null,
         financial_year: financialYear().label,
-        pan_required_above: PAN_REQUIRED_ABOVE,
+        pan_required_from: PAN_REQUIRED_FROM,
       });
     }
 

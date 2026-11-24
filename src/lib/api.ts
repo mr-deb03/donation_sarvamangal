@@ -21,14 +21,14 @@ export interface DonorStatus {
   registration_pending: boolean;
   /**
    * Only when asked with an amount (null otherwise): true when the donor has no PAN on file and
-   * this financial year's successful donations plus this amount are more than `pan_required_above`.
-   * A new donor has given nothing yet, so for them it's amount > `pan_required_above`.
+   * this financial year's successful donations plus this amount reach `pan_required_from`.
+   * A new donor has given nothing yet, so for them it's amount >= `pan_required_from`.
    */
   pan_required: boolean | null;
   /** e.g. "2026-27" */
   financial_year: string;
-  /** ₹ — the public rule: PAN is needed once a donor's gifts this financial year are more than this. */
-  pan_required_above: number;
+  /** ₹ — the public rule: PAN is needed once a donor's gifts this financial year reach this (or more). */
+  pan_required_from: number;
 }
 
 export type PaymentStatus = "pending" | "success" | "failed";

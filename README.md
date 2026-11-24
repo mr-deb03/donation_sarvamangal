@@ -26,7 +26,7 @@ npm run lint
 ```
 
 **Demo mode** (`npm run dev:mock`, `mock/mock-api.ts`) follows the real API's rules — new donors get a Donor
-ID a few seconds after registering, PAN is asked for above ₹1,000 a year — and the payment is a yes/no dialog.
+ID a few seconds after registering, PAN is asked for at ₹1,000 or more a year — and the payment is a yes/no dialog.
 Try `9876543210` (₹600 given this year, no PAN) and `9811111111` (PAN on file). Data resets when the server
 restarts. None of it is in a production build.
 
@@ -48,11 +48,11 @@ One page, one form (`src/features/donate/DonateForm.tsx`):
    soon as it's typed, the app asks the API whether it already has a Donor ID — and, for the amount chosen, whether
    this gift needs a PAN. It asks again whenever the amount or the number changes.
 3. **PAN — shown only when it's needed**, and then required, with the message "with this gift, your donations in this
-   financial year come to more than ₹1,000…". The API decides, by mobile number (`pan_required`): the donor has no
+   financial year come to ₹1,000 or more…". The API decides, by mobile number (`pan_required`): the donor has no
    PAN on file and their successful online donations in the current financial year (1 April – 31 March), **including
-   this gift, come to more than ₹1,000** — exactly ₹1,000 doesn't need one. So a new donor sees it for a gift of
-   ₹1,001 or more; a returning donor sees it once this gift takes their year's total past ₹1,000 (₹600 given + ₹401
-   now, not ₹400); a donor with a PAN on file never does.
+   this gift, come to ₹1,000 or more** — exactly ₹1,000 needs one. So a new donor sees it for a gift of ₹1,000 or
+   more; a returning donor sees it once this gift takes their year's total to ₹1,000 (₹600 given + ₹400 now, not
+   ₹399); a donor with a PAN on file never does.
    The field waits for a mobile number, and the form never guesses — a donor with a PAN on file is never asked. If
    the check fails (API unreachable, or without the new endpoint), the form says so under the mobile number and
    shows no PAN field. The form never learns the total itself. Creating the donation enforces the same rule
@@ -80,14 +80,14 @@ answer it with a 303 to `/receipt/:id`; on Apache, `.htaccess` serves the app fo
 
 | Call | Endpoint | Notes |
 | --- | --- | --- |
-| Is this mobile registered? Does this gift need a PAN? | `GET /donor/api/v1/get_donor_status_by_mobile/?mobile=&amount=` | **New.** Returns `registered`, `registration_pending`, `pan_required` (for `amount`; `null` without one), `financial_year`, `pan_required_above` — nothing personal (no name, PAN, Donor ID or yearly total). `pan_required` is the same yes/no that creating the donation gives. |
+| Is this mobile registered? Does this gift need a PAN? | `GET /donor/api/v1/get_donor_status_by_mobile/?mobile=&amount=` | **New.** Returns `registered`, `registration_pending`, `pan_required` (for `amount`; `null` without one), `financial_year`, `pan_required_from` — nothing personal (no name, PAN, Donor ID or yearly total). `pan_required` is the same yes/no that creating the donation gives. |
 | Register a donor | `POST /donor/api/v1/register_donor_by_mobile/` | **New.** `{first_name, middle_name, last_name, mobile, pan_no?}` (all three names required) → `{status: "registered" \| "pending"}`. Writes `donors_registration`; never registers a mobile (or PAN) twice. A PAN here only finds an existing donor — it isn't stored. |
 | Create the donation | `POST /donation_online/api/v1/create_donation_by_mobile/` | **New.** `{mobile, amount, purpose_of_donation, pan_no?}` → the `donation_online` row. Enforces the PAN rule (`errorCode: PAN_REQUIRED`); a PAN given is kept on the donation (`pan_no`), refused if it's another donor's. |
 | Start Easebuzz | `POST /payment_integration/api/v1/easebuzz_checkout` | Existing, **changed**: charges the donation's saved amount — refuses a different one (`AMOUNT_MISMATCH`), an unknown donation (`DONATION_NOT_FOUND`) or one already paid (`ALREADY_PAID`). When Easebuzz is down, slow (15 s) or refuses, answers `EASEBUZZ_UNREACHABLE` / `EASEBUZZ_TIMEOUT` / `EASEBUZZ_ERROR` (HTTP 502) — before, an unreachable Easebuzz crashed the whole API process. |
 | Payment status | `GET /donation_online/api/v1/get_donation_online/:id/` | Existing. Updated by Easebuzz's webhook + the API's scheduler. |
 
 The three new endpoints live in `sarvam_donation_management/src/donor/` and `src/donation_online/`; the shared rules
-(PAN above ₹1,000, financial year, mobile matching, PAN hand-over) are in `src/donor/donor_by_mobile_helpers.js`.
+(PAN at ₹1,000 or more, financial year, mobile matching, PAN hand-over) are in `src/donor/donor_by_mobile_helpers.js`.
 Two deliberate exceptions to "don't touch the existing API" (Nov 2026):
 
 - **One column:** `donation_online.pan_no` (`db_scripts/2026-11-23_donation_online_pan_no.sql`). A PAN typed with a

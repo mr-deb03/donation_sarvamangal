@@ -40,5 +40,5 @@ export function causeLabel(value: string | null | undefined): string {
 /** Suggested amounts — the main site's donation tiers (Sarvamangal seedDonationTiers). */
 export const SUGGESTED_AMOUNTS = [500, 1500, 5000];
 
-/** Fallback for the API's pan_required_above, used until the mobile number is checked. */
-export const PAN_REQUIRED_ABOVE = 1000;
+/** Fallback for the API's pan_required_from (PAN at ₹1,000 or more), used until the number is checked. */
+export const PAN_REQUIRED_FROM = 1000;

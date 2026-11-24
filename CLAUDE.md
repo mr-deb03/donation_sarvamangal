@@ -9,9 +9,10 @@
   the old app and its admin pages still use them. Exceptions so far (Nov 2026, see README → The API):
   `donation_online.pan_no` (SQL in `db_scripts/`), checkout charging the saved amount, and the webhook's
   failed-payment update (it wrote a column that doesn't exist).
-- The PAN rule lives in the API (`donor_by_mobile_helpers.js`); the form only mirrors it. It applies at **more than
-  ₹1,000** in a financial year, this gift included — exactly ₹1,000 doesn't need a PAN (owner's call, 23 Nov 2026:
-  `>`, not `>=`; it was `>=` earlier the same day).
+- The PAN rule lives in the API (`donor_by_mobile_helpers.js`); the form only mirrors it. It applies at **₹1,000 or
+  more** in a financial year, this gift included — exactly ₹1,000 needs a PAN (owner's call, 24 Nov 2026: `>=`.
+  It went `>=` → `>` → `>=` over 23–24 Nov; if it changes again, flip `panRequired` and rename
+  `PAN_REQUIRED_FROM` / `pan_required_from` to match).
   A PAN reaches `donors` only after a successful payment (`applyDonationPan`), never from registration or creation.
   The PAN field is shown only when the API says this gift needs one (`pan_required`, by mobile number) — no optional
   PAN field. First, middle and surname are all required, in the form and in `register_donor_by_mobile` (owner's call,

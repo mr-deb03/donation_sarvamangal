@@ -24,7 +24,7 @@ import { cn } from "@/lib/cn";
 import { isGatewayPending, isGatewaySuccess, openEasebuzzCheckout } from "@/lib/easebuzz";
 import { cleanAmount, displayFinancialYear, financialYearLabel, titleCase } from "@/lib/format";
 import { recordGatewayResponse, savePending, type DonorForm } from "@/lib/pending";
-import { CAUSES, PAN_REQUIRED_ABOVE, SUGGESTED_AMOUNTS, type Cause } from "@/lib/reference";
+import { CAUSES, PAN_REQUIRED_FROM, SUGGESTED_AMOUNTS, type Cause } from "@/lib/reference";
 import { amountError, cleanDigits, cleanPan, mobileError, nameError, panError } from "@/lib/validation";
 
 import { GiftSummary } from "./GiftSummary";
@@ -83,11 +83,11 @@ export function DonateForm({ initial }: { initial: DonateFormInitial }) {
   const { check, panRequired: panForGift, setStatus } = useDonorStatus(form.mobile, amountValue);
   const status: DonorStatus | undefined = check?.state === "ready" ? check.status : undefined;
 
-  const threshold = status?.pan_required_above ?? PAN_REQUIRED_ABOVE;
+  const threshold = status?.pan_required_from ?? PAN_REQUIRED_FROM;
   const fyLabel = displayFinancialYear(status?.financial_year ?? financialYearLabel());
   // PAN rule — the API decides, from the donor it finds by mobile number: never asked if their
   // record already has a PAN; otherwise asked once this financial year's gifts, this one included,
-  // come to more than the threshold (for a new donor: a gift above it). The field appears only when
+  // reach the threshold or more (for a new donor: a gift of ₹1,000+). The field appears only when
   // the API has said so — on the mobile check, or on PAN_REQUIRED when the donation is created.
   // The form never guesses: a donor with a PAN on file is never asked.
   const panNeeded = panForGift === true || (serverWantsPan?.mobile === form.mobile && serverWantsPan.amount === amount);
@@ -455,7 +455,7 @@ export function DonateForm({ initial }: { initial: DonateFormInitial }) {
                   <IdCard className="mt-0.5 size-4 shrink-0 text-crimson-deep" aria-hidden />
                   <span>
                     <span className="font-semibold">PAN needed:</span> with this gift, your donations in this financial
-                    year ({fyLabel}) come to more than <Rupees amount={threshold} />, so please provide your PAN — it's
+                    year ({fyLabel}) come to <Rupees amount={threshold} /> or more, so please provide your PAN — it's
                     required under government guidelines.
                   </span>
                 </p>
