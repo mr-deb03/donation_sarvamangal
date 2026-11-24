@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    {
+      "source": "/app/paymentdetails/receipt/:donationId/:orderId",
+      "destination": "/api/easebuzz-return?donationId=:donationId"
+    },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens copied from the main site (Sarvamangal/src/app/(frontend)/globals.css,
+ * design-system/sarvamangal/MASTER.md) so the donation app reads as the same website.
+ * Components use these names (bg-ink, text-crimson, font-display…), never raw hex.
+ */
+@theme {
+  --color-ink: #17193b;
+  --color-ink-soft: #2b2e4a;
+  --color-ink-muted: #5e6283;
+  --color-ink-200: #b9bcdb;
+
+  --color-crimson: #c8103a;
+  --color-crimson-deep: #8e0b36;
+
+  --color-marigold: #f6b21b;
+  --color-marigold-soft: #fde7b0;
+
+  --color-paper: #ffffff;
+  --color-paper-2: #f3f6fb;
+  --color-ruling: #bbd3ee;
+  --color-line: #e3e8f1;
+  --color-pencil: #6b7088;
+
+  --color-success: #0f7a4a;
+  --color-success-soft: #e3f4eb;
+
+  --font-display: "Fraunces Variable", Georgia, serif;
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    scroll-padding-block: 5.5rem;
+  }
+
+  a,
+  button,
+  label,
+  summary {
+    touch-action: manipulation;
+  }
+
+  body {
+    background: var(--color-paper-2);
+    color: var(--color-ink-soft);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  @media (min-width: 640px) {
+    body {
+      font-size: 1.0625rem;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-ink);
+    line-height: 1.1;
+    text-wrap: balance;
+    font-variant-numeric: lining-nums;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  .font-display {
+    font-variant-numeric: lining-nums;
+  }
+
+  /* Crimson ring on light surfaces; dark sections switch it to marigold (.on-ink). */
+  :focus-visible {
+    outline: 3px solid var(--focus-ring, var(--color-crimson));
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--color-marigold-soft);
+    color: var(--color-ink);
+  }
+
+  summary {
+    cursor: pointer;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* The ₹ sign in the system font: Inter and Fraunces don't draw it. */
+  .rupee {
+    font-family: system-ui, sans-serif;
+  }
+
+  /* Numbers typed into inputs: no spinners. */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+@utility on-ink {
+  background-color: var(--color-ink);
+  color: var(--color-ink-200);
+  --focus-ring: var(--color-marigold);
+}
+
+/* Small capitals above titles — the main site's "eyebrow". */
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/*
+ * The receipt stub's perforation: a dashed rule with a notch cut into each edge.
+ * Put it on an element that spans the card's full width (cancel the card's padding).
+ */
+@utility perforation {
+  position: relative;
+  border-top: 2px dashed var(--perforation-line, rgb(255 255 255 / 0.28));
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: -12px;
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    background: var(--perforation-notch, var(--color-paper-2));
+  }
+  &::before {
+    left: -11px;
+  }
+  &::after {
+    right: -11px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .step-enter {
+    animation: step-enter 420ms var(--ease-out-soft) both;
+  }
+}
+
+@keyframes step-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media print {
+  header,
+  footer,
+  [data-no-print] {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+}
